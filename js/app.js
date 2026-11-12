@@ -282,7 +282,7 @@ const fPkt = fP && fP !== 'Još ne znam' ? fP + (pMeta ? ' · ' + pMeta : '') : 
 const fChip = !fPkt ? (fV || 'Snimanje') : (fPkt.indexOf(fV) === 0 ? fPkt : fV + ' · ' + fPkt);
 const datTxt = fDatum ? fDatum.split('-').reverse().join('.') + '.' : 'datum otvoren';
 const stCls = (n) => 'fm-st' + (fStep > n ? ' fm-st-do' : fStep === n ? ' fm-st-now' : '');
-const fVrste = ['Vjenčanje', 'Portret', 'Brend'].map((v) => ({ label: v, cls: v === fV ? 'fm-pill fm-pill-on' : 'fm-pill', pressed: v === fV, pick: () => this.setState({ ...snap(), fVrsta: v, fPaket: '' }) }));
+const fVrste = ['Vjenčanje', 'Portret', 'Brend', 'Događaji'].map((v) => ({ label: v, cls: v === fV ? 'fm-pill fm-pill-on' : 'fm-pill', pressed: v === fV, pick: () => this.setState({ ...snap(), fVrsta: v, fPaket: '' }) }));
 const fPaketi = (paketi[fV] || []).concat([['Još ne znam', 'dogovorimo zajedno']]).map((q) => ({ label: q[0], meta: q[1], cls: q[0] === fP ? 'fm-pill fm-pill-on' : 'fm-pill', pressed: q[0] === fP, pick: () => this.setState({ ...snap(), fPaket: q[0] }) }));
 return {
 prIsP, prIsV,
@@ -305,7 +305,7 @@ mailHref: 'mailto:hello@kadar.studio?subject=' + encodeURIComponent('Upit: ' + v
 zakaziVjencanje: openForm('Vjenčanje', ''),
 zakaziPortret: openForm('Portret', ''),
 zakaziBrend: openForm('Brend', ''),
-fOpen, fDone, fShowForm: !fDone, fErr, fIme, fKontakt, fDatum, fPoruka, fVrste, fPaketi, fHasPaketi: !!fV,
+fOpen, fDone, fShowForm: !fDone, fErr, fIme, fKontakt, fDatum, fPoruka, fVrste, fPaketi, fHasPaketi: !!(paketi[fV] || []).length,
 fStep1: !fUpit && fStep === 1, fStep2: !fUpit && fStep === 2, fStep3: !fUpit && fStep === 3,
 fPrezime, fUpitForm: fUpit && !fDone, fShowSteps: !fDone && !fUpit, fKick: fUpit ? 'Upit' : 'Zakazivanje', fNaslov: fUpit ? 'Pošalji upit' : 'Rezerviši termin',
 fS1: stCls(1), fS2: stCls(2), fS3: stCls(3), fS1n: fStep > 1 ? '✓' : '1', fS2n: fStep > 2 ? '✓' : '2',
