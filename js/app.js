@@ -177,6 +177,7 @@ const fOpen = !!st.fOpen, fDone = !!st.fDone;
 const fStep = Math.min(3, Math.max(1, st.fStep || 1));
 const fV = st.fVrsta || '', fP = st.fPaket || '';
 const fIme = st.fIme || '', fKontakt = st.fKontakt || '', fDatum = st.fDatum || '', fPoruka = st.fPoruka || '', fErr = st.fErr || '';
+const fPrezime = st.fPrezime || '', fUpit = !!st.fUpit;
 const paketi = {
 'Vjenčanje': [['Vjenčanje', '10 sati · 800 KM'], ['Vjenčanje + album', '10 sati · 1.100 KM'], ['Dva fotografa', '10 sati · 1.300 KM'], ['Dva dana', '2 dana · 1.500 KM']],
 'Portret': [['Mini portret', '30 min · 180 KM'], ['Portret', '1 sat · 300 KM'], ['Par ili porodica', '1,5 sat · 380 KM']],
@@ -184,14 +185,15 @@ const paketi = {
 };
 const $id = (i) => document.getElementById(i);
 const val = (i, d) => { const x = $id(i); return x ? x.value : d; };
-const snap = () => ({ fIme: val('fm-ime', fIme), fKontakt: val('fm-kontakt', fKontakt), fPoruka: val('fm-poruka', fPoruka) });
+const snap = () => ({ fIme: val('fm-ime', fIme), fKontakt: val('fm-kontakt', fKontakt), fPrezime: val('fm-prezime', fPrezime), fPoruka: val('fm-poruka', fPoruka) });
 const lock = (on) => { try { document.body.style.overflow = on ? 'hidden' : ''; } catch (err) {} };
 const openForm = (v, p) => (e) => {
 if (e && e.preventDefault) e.preventDefault();
 lock(true);
-this.setState({ fOpen: true, fDone: false, fErr: '', fVrsta: v || '', fPaket: p || '', fMonth: 0, fStep: p ? 2 : 1 });
+this.setState({ fOpen: true, fDone: false, fUpit: false, fErr: '', fVrsta: v || '', fPaket: p || '', fMonth: 0, fStep: p ? 2 : 1 });
 
 };
+const openUpit = (e) => { if (e && e.preventDefault) e.preventDefault(); lock(true); this.setState({ fOpen: true, fDone: false, fUpit: true, fErr: '' }); };
 const fClose = (e) => { if (e && e.preventDefault) e.preventDefault(); lock(false); this.setState({ fOpen: false, fDone: false }); };
 const PMD = [{"v": "Portret", "name": "Mini portret", "price": "180 KM", "time": "30 min", "img": "img/e45e05f4de930c9a2693576da8caf6c2.jpg", "za": "Za profilnu sliku, CV ili brzi portret kad nemate vremena za duže snimanje.", "inc": ["10 obrađenih fotografija u punoj rezoluciji", "Online galerija za preuzimanje", "1 lokacija u Sarajevu", "1 presvlačenje", "Galerija za 3 dana"], "ex": [["Dodatnih 30 min", "60 KM"], ["Brža isporuka (24 h)", "30 KM"]], "ic": ""}, {"v": "Portret", "name": "Portret", "price": "300 KM", "time": "1 sat", "img": "img/7bc4d84090e1278202665874080911a1.jpg", "za": "Za društvene mreže, poslovni profil ili poklon. Dovoljno vremena da se opustite pred kamerom.", "inc": ["20 obrađenih fotografija u punoj rezoluciji", "Online galerija za preuzimanje", "Do 2 lokacije u Sarajevu", "Do 2 presvlačenja", "Savjeti oko odjeće prije snimanja", "Galerija za 5 dana"], "ex": [["Dodatni sat", "200 KM"], ["Brža isporuka (48 h)", "50 KM"], ["Štampa 20×30 cm", "25 KM"]], "ic": ""}, {"v": "Portret", "name": "Par ili porodica", "price": "380 KM", "time": "1,5 sat", "img": "img/f7b9fef688e3538b4cd28884ee8ff72e.jpg", "za": "Za parove, porodice i male grupe do 5 osoba. Ostavljam prostor za spontane kadrove, naročito s djecom.", "inc": ["30 obrađenih fotografija u punoj rezoluciji", "Online galerija za preuzimanje", "Do 2 lokacije u Sarajevu", "Do 5 osoba u kadru", "Galerija za 7 dana"], "ex": [["Dodatnih 30 min", "80 KM"], ["Štampa 20×30 cm", "25 KM"], ["Osoba preko 5", "20 KM"]], "ic": ""}, {"v": "Brend", "name": "Brend", "price": "500 KM", "time": "4 sata", "img": "img/5082f76ec2de110db44ac982ee974a31.jpg", "za": "Za male firme, zanatlije i kafiće kojima trebaju fotografije za sajt, Instagram i štampane materijale.", "inc": ["40 obrađenih fotografija u punoj rezoluciji", "Moodboard dogovoren prije snimanja", "Licenca za sajt, mreže i štampu", "Online galerija za preuzimanje", "Galerija za 10 dana"], "ex": [["Dodatni sat", "150 KM"], ["Kratki video 15 s", "120 KM"]], "ic": "pm-i-sb"}, {"v": "Brend", "name": "Brend cijeli dan", "price": "900 KM", "time": "8 sati", "img": "img/2ddbe4ce833b1f663d0b92e4aa08c853.jpg", "za": "Za brendove kojima treba cijela biblioteka kadrova: proizvod, ljudi, prostor i detalji u jednom danu.", "inc": ["80 obrađenih fotografija u punoj rezoluciji", "Moodboard i plan snimanja unaprijed", "Licenca za sajt, mreže i štampu", "Online galerija za preuzimanje", "Galerija za 14 dana"], "ex": [["Kratki video 15 s", "120 KM"], ["Brža isporuka (5 dana)", "100 KM"]], "wide": true, "ic": "pm-i-ikea"}, {"v": "Brend", "name": "Kampanja", "price": "1.700 KM", "time": "2 dana", "img": "img/f20562f4a150371e119e0521b0ae2472.jpg", "za": "Za lansiranja i kampanje u kojima je potreban koncept, režija i više različitih scena.", "inc": ["150 obrađenih fotografija u punoj rezoluciji", "Koncept i moodboard zajedno s vama", "Licenca za sajt, mreže, štampu i oglase", "Online galerija za preuzimanje", "Galerija za 21 dan"], "ex": [["Dodatni dan", "700 KM"], ["Video 30 s", "250 KM"]], "ic": ""}, {"v": "Vjenčanje", "name": "Vjenčanje", "price": "800 KM", "time": "10 sati", "img": "img/32f95a922e29d08852a9e19745485f0a.jpg", "za": "Za vjenčanje u Sarajevu i okolini. Pratim cijeli dan, od priprema do prvog plesa.", "inc": ["400+ obrađenih fotografija", "Online galerija za preuzimanje", "10 sati snimanja", "Razgovor i dogovor prije vjenčanja", "Galerija za 21 dan"], "ex": [["Dodatni sat", "100 KM"], ["Put izvan Sarajeva", "50 KM"]], "ic": ""}, {"v": "Vjenčanje", "name": "Vjenčanje + album", "price": "1.100 KM", "time": "10 sati", "img": "img/41b4c71dafeb94a30215a4525370f094.jpg", "za": "Za parove koji žele nešto što mogu držati u rukama, pored online galerije.", "inc": ["400+ obrađenih fotografija", "Štampani album 30×30 cm", "Online galerija za preuzimanje", "10 sati snimanja", "Galerija za 21 dan"], "ex": [["Dodatni sat", "100 KM"], ["Dodatni album", "180 KM"]], "ic": ""}, {"v": "Vjenčanje", "name": "Dva fotografa", "price": "1.300 KM", "time": "10 sati", "img": "img/114a3822151943b8c33cbf05d0bba433.jpg", "za": "Za veća vjenčanja gdje se istovremeno dešava više stvari, npr. priprema mladenke i mladoženje.", "inc": ["600+ obrađenih fotografija", "Dva fotografa tokom cijelog dana", "Online galerija za preuzimanje", "10 sati snimanja", "Galerija za 28 dana"], "ex": [["Štampani album 30×30 cm", "180 KM"], ["Dodatni sat", "160 KM"]], "ic": ""}, {"v": "Vjenčanje", "name": "Dva dana", "price": "1.500 KM", "time": "2 dana", "img": "img/0197a6de5764d227e3658f2aa558fda8.jpg", "za": "Za parove koji žele pripreme i proslavu odvojeno, bez žurbe.", "inc": ["Pripreme prvog dana, vjenčanje drugog", "500+ obrađenih fotografija", "Online galerija za preuzimanje", "Razgovor i dogovor prije vjenčanja", "Galerija za 28 dana"], "ex": [["Štampani album 30×30 cm", "180 KM"], ["Dodatni sat", "100 KM"]], "ic": ""}];
 const pmStepsL = ["Pošaljete upit i dogovorimo termin", "Snimanje na dogovorenoj lokaciji", "Biram i obrađujem najbolje kadrove", "Dobijete link na online galeriju"];
@@ -223,6 +225,17 @@ if (fStep === 2) { if (!fDatum) { this.setState({ ...snap(), fErr: 'Izaberi slob
 };
 const send = (kind) => () => {
 const s2 = snap();
+if (fUpit) {
+const im = s2.fIme.trim(), pr = s2.fPrezime.trim(), tel = s2.fKontakt.trim(), po = s2.fPoruka.trim();
+const e2 = !im ? 'Upiši ime.' : !pr ? 'Upiši prezime.' : !tel ? 'Upiši broj telefona da te mogu nazvati.' : !po ? 'Napiši ukratko šta želiš.' : '';
+if (e2) { this.setState({ ...s2, fErr: e2 }); return; }
+const tu = 'Zdravo, ja sam ' + im + ' ' + pr + '. ' + po + ' Broj telefona: ' + tel + '.';
+const wu = 'https://wa.me/' + broj + '?text=' + encodeURIComponent(tu);
+const mu = 'mailto:' + mail + '?subject=' + encodeURIComponent('Upit sa sajta') + '&body=' + encodeURIComponent(tu);
+this.setState({ ...s2, fErr: '', fDone: true, fWa: wu, fMl: mu });
+if (kind === 'wa') { try { window.open(wu, '_blank', 'noopener'); } catch (x) {} } else { try { window.location.href = mu; } catch (x) {} }
+return;
+}
 const ime2 = s2.fIme.trim(), kon2 = s2.fKontakt.trim();
 let err = '';
 if (!fV) err = 'Izaberi vrstu snimanja.';
@@ -293,12 +306,14 @@ zakaziVjencanje: openForm('Vjenčanje', ''),
 zakaziPortret: openForm('Portret', ''),
 zakaziBrend: openForm('Brend', ''),
 fOpen, fDone, fShowForm: !fDone, fErr, fIme, fKontakt, fDatum, fPoruka, fVrste, fPaketi, fHasPaketi: !!fV,
-fStep1: fStep === 1, fStep2: fStep === 2, fStep3: fStep === 3,
+fStep1: !fUpit && fStep === 1, fStep2: !fUpit && fStep === 2, fStep3: !fUpit && fStep === 3,
+fPrezime, fUpitForm: fUpit && !fDone, fShowSteps: !fDone && !fUpit, fKick: fUpit ? 'Upit' : 'Zakazivanje', fNaslov: fUpit ? 'Pošalji upit' : 'Rezerviši termin',
 fS1: stCls(1), fS2: stCls(2), fS3: stCls(3), fS1n: fStep > 1 ? '✓' : '1', fS2n: fStep > 2 ? '✓' : '2',
 fChip, fChip2: fChip + ' · ' + datTxt,
-fCnt: 'Korak ' + fStep + ' od 3' + (fStep === 2 && fDatum ? ' · izabrano: ' + datTxt : ''),
-fCanBack: fStep > 1, fNotLast: fStep < 3, fLast: fStep === 3,
+fCnt: fUpit ? 'Odgovaram u roku od 24 sata.' : 'Korak ' + fStep + ' od 3' + (fStep === 2 && fDatum ? ' · izabrano: ' + datTxt : ''),
+fCanBack: !fUpit && fStep > 1, fNotLast: !fUpit && fStep < 3, fLast: fUpit || fStep === 3,
 fOnIme: (e) => this.setState({ fIme: e.target.value, fErr: '' }),
+fOnPrezime: (e) => this.setState({ fPrezime: e.target.value, fErr: '' }),
 fOnKontakt: (e) => this.setState({ fKontakt: e.target.value, fErr: '' }),
 fOnPoruka: (e) => this.setState({ fPoruka: e.target.value }),
 fNext, fPrev: () => goStep(fStep - 1), fGo1: () => goStep(1), fGo2: () => goStep(2),
@@ -310,7 +325,7 @@ calNext: () => { if (mOff < 11) this.setState({ ...snap(), fMonth: mOff + 1 }); 
 fImeKratko: (fIme.trim().split(' ')[0] || ''), fWa: st.fWa || '#', fMl: st.fMl || '#',
 mOpen: !!st.mOpen, mToggle: () => this.setState({ mOpen: !this.state.mOpen }), mClose: () => this.setState({ mOpen: false }),
 mBook: (e) => { this.setState({ mOpen: false }); openForm('', '')(e); },
-openForm: openForm('', ''), fClose, sendWa: send('wa'), sendMail: send('mail'),
+openForm: openForm('', ''), openUpit, fClose, sendWa: send('wa'), sendMail: send('mail'),
 fBack: (e) => { if (e.target === e.currentTarget) fClose(); },
 fKey: (e) => { if (e.key === 'Escape') fClose(); },
 fBackToForm: (e) => { if (e && e.preventDefault) e.preventDefault(); this.setState({ fDone: false }); },
