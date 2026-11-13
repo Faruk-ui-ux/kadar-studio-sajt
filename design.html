@@ -1,0 +1,349 @@
+<!doctype html>
+<html lang="bs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Dizajn panel — Kadar Studio</title>
+<style>
+:root{--bg:#1B1917;--pn:#252320;--ln:#3A3631;--tx:#F1E9DE;--mu:#A8998A;--ac:#C8A87C;--rd:#E5484D;--wr:#E0A400}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{display:flex;flex-direction:column;background:var(--bg);color:var(--tx);font:13px/20px system-ui,-apple-system,"Segoe UI",sans-serif}
+button,input,select,textarea{font:inherit;color:inherit}
+.bar{display:flex;align-items:center;gap:12px;height:52px;padding:0 16px;border-bottom:1px solid var(--ln);background:var(--pn);flex:none}
+.bar strong{font-size:14px;margin-right:4px}
+.sp{flex:1}
+.seg{display:flex;padding:2px;border-radius:8px;background:var(--bg);border:1px solid var(--ln)}
+.seg button{border:0;background:transparent;padding:4px 12px;border-radius:6px;cursor:pointer;color:var(--mu)}
+.seg button.on{background:var(--ac);color:#2A2118;font-weight:600}
+.btn{border:1px solid var(--ln);background:transparent;padding:6px 12px;border-radius:8px;cursor:pointer}
+.btn:hover{border-color:var(--ac)}
+.btn.pri{background:var(--ac);color:#2A2118;border-color:var(--ac);font-weight:600}
+main{flex:1;display:flex;min-height:0}
+#stage{flex:1;min-width:0;display:flex;justify-content:center;align-items:flex-start;padding:16px;overflow:hidden;background:#141311}
+#fwrap{position:relative;flex:none;border-radius:8px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,.5);background:#fff}
+#f{position:absolute;left:0;top:0;border:0;transform-origin:0 0;background:#fff}
+#panel{width:320px;flex:none;overflow-y:auto;border-left:1px solid var(--ln);background:var(--pn);padding:16px}
+.tip{color:var(--mu);padding:8px 0}
+.tip b{color:var(--tx)}
+.hd{display:flex;flex-direction:column;gap:8px;padding-bottom:16px;border-bottom:1px solid var(--ln);margin-bottom:16px}
+.hd code{display:block;font:600 13px/20px ui-monospace,Consolas,monospace;color:var(--ac);word-break:break-all}
+.hd small{color:var(--mu)}
+.nav{display:flex;gap:4px}
+.nav button{flex:1;border:1px solid var(--ln);background:transparent;border-radius:6px;padding:4px 0;cursor:pointer}
+.nav button:hover{border-color:var(--ac)}
+.bp{display:inline-block;padding:0 8px;border-radius:999px;background:var(--bg);border:1px solid var(--ln);color:var(--ac);font-size:12px}
+.grp{margin-bottom:20px}
+.grp h3{margin:0 0 8px;font-size:11px;line-height:16px;letter-spacing:.1em;text-transform:uppercase;color:var(--mu)}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.fld{display:flex;flex-direction:column;gap:4px;min-width:0}
+.fld>span{display:flex;justify-content:space-between;color:var(--mu);font-size:12px}
+.fld .x{border:0;background:transparent;color:var(--rd);cursor:pointer;padding:0 4px}
+.in{width:100%;min-height:32px;background:var(--bg);border:1px solid var(--ln);border-radius:6px;padding:4px 8px}
+.in.ed{border-color:var(--ac)}
+.in.warn{border-color:var(--wr)}
+input[type=color].in{padding:2px;height:32px;cursor:pointer}
+textarea.in{resize:vertical;min-height:64px}
+select.in{padding:4px}
+.note{color:var(--mu);font-size:12px;margin:0 0 16px}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ac);color:#2A2118;font-weight:600;padding:8px 16px;border-radius:8px;opacity:0;pointer-events:none;transition:opacity .2s}
+.toast.on{opacity:1}
+#err{display:none;position:absolute;inset:0;background:var(--bg);padding:24px;color:var(--tx)}
+</style>
+</head>
+<body>
+<header class="bar">
+<strong>Dizajn panel</strong>
+<div class="seg" id="dev">
+<button data-d="d">Desktop</button><button data-d="t">Tablet</button><button data-d="m">Mobitel</button>
+</div>
+<div class="seg" id="mode">
+<button data-m="pick" class="on">Biraj element</button><button data-m="use">Isprobaj sajt</button>
+</div>
+<span class="sp"></span>
+<button class="btn" id="reset">Poništi sve</button>
+<button class="btn" id="dl">Preuzmi .css</button>
+<button class="btn pri" id="copy">Kopiraj izmjene</button>
+</header>
+<main>
+<section id="stage">
+<div id="fwrap">
+<iframe id="f" src="index.html" title="Sajt"></iframe>
+<div id="err"><b>Ne mogu da otvorim sajt unutar panela.</b><br>Otvori ovu stranicu preko linka (https://faruk-ui-ux.github.io/kadar-studio-sajt/design.html), ne kao fajl iz foldera.</div>
+</div>
+</section>
+<aside id="panel"></aside>
+</main>
+<div class="toast" id="toast"></div>
+<script>
+(() => {
+'use strict';
+const $ = (s) => document.querySelector(s);
+const KEY = 'kadar-dp-v1';
+let st = { edits: { d: {}, t: {}, m: {} }, texts: {}, device: 'm' };
+try { Object.assign(st, JSON.parse(localStorage.getItem(KEY) || '{}')); } catch (e) {}
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) {} };
+
+const DEV = { d: { w: 1440, l: 'Desktop (od 1024 px)' }, t: { w: 768, l: 'Tablet (768–1023 px)' }, m: { w: 375, l: 'Mobitel (do 767 px)' } };
+const MEDIA = { d: '@media (min-width:1024px)', t: '@media (min-width:768px) and (max-width:1023px)', m: '@media (max-width:767px)' };
+
+const PROPS = [
+  { g: 'Tekst', cols: 1, items: [
+    { p: 'font-size', l: 'Veličina fonta', t: 'px', step: 1 },
+    { p: 'line-height', l: 'Visina reda', t: 'px', step: 4, grid: 1 },
+    { p: 'letter-spacing', l: 'Razmak slova', t: 'px', step: 0.5 },
+    { p: 'font-weight', l: 'Debljina', t: 'sel', opts: ['300', '400', '500', '600', '700', '800'] },
+    { p: 'text-align', l: 'Poravnanje', t: 'sel', opts: ['left', 'center', 'right'] },
+    { p: 'color', l: 'Boja teksta', t: 'col' }
+  ] },
+  { g: 'Unutrašnji razmak', cols: 2, items: [
+    { p: 'padding-top', l: 'Gore', t: 'px', step: 4, grid: 1 },
+    { p: 'padding-bottom', l: 'Dole', t: 'px', step: 4, grid: 1 },
+    { p: 'padding-left', l: 'Lijevo', t: 'px', step: 4, grid: 1 },
+    { p: 'padding-right', l: 'Desno', t: 'px', step: 4, grid: 1 }
+  ] },
+  { g: 'Vanjski razmak', cols: 2, items: [
+    { p: 'margin-top', l: 'Gore', t: 'px', step: 4, grid: 1 },
+    { p: 'margin-bottom', l: 'Dole', t: 'px', step: 4, grid: 1 },
+    { p: 'gap', l: 'Razmak djece', t: 'px', step: 4, grid: 1 }
+  ] },
+  { g: 'Oblik', cols: 2, items: [
+    { p: 'width', l: 'Širina', t: 'px', step: 4, grid: 1 },
+    { p: 'height', l: 'Visina', t: 'px', step: 4, grid: 1 },
+    { p: 'border-radius', l: 'Zaobljenje', t: 'px', step: 4, grid: 1 },
+    { p: 'opacity', l: 'Prozirnost', t: 'num', step: 0.1 },
+    { p: 'background-color', l: 'Boja pozadine', t: 'col' }
+  ] }
+];
+
+const f = $('#f');
+let doc = null, win = null, sel = null, hov = null, selector = '', mode = 'pick';
+let hovBox, selBox;
+
+const total = () => Object.values(st.edits).reduce((n, bp) => n + Object.values(bp).reduce((m, o) => m + Object.keys(o).length, 0), 0) + Object.keys(st.texts).length;
+const toast = (m) => { const t = $('#toast'); t.textContent = m; t.classList.add('on'); clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove('on'), 1600); };
+const badge = () => { const n = total(); $('#copy').textContent = n ? 'Kopiraj izmjene (' + n + ')' : 'Kopiraj izmjene'; };
+
+/* ---------- prikaz uređaja ---------- */
+function fit() {
+  const stage = $('#stage'), W = DEV[st.device].w;
+  const aw = stage.clientWidth - 32, ah = stage.clientHeight - 32;
+  const s = Math.min(1, aw / W), H = Math.floor(ah / s);
+  f.style.width = W + 'px'; f.style.height = H + 'px'; f.style.transform = 'scale(' + s + ')';
+  const wrap = $('#fwrap'); wrap.style.width = Math.round(W * s) + 'px'; wrap.style.height = Math.round(H * s) + 'px';
+  placeBoxes();
+}
+function setDevice(d) {
+  st.device = d; save();
+  document.querySelectorAll('#dev button').forEach((b) => b.classList.toggle('on', b.dataset.d === d));
+  fit(); setTimeout(() => { placeBoxes(); render(); }, 250);
+}
+
+/* ---------- CSS izmjena ---------- */
+function buildCSS(pretty) {
+  let out = '';
+  ['d', 't', 'm'].forEach((bp) => {
+    const e = st.edits[bp], rules = [];
+    Object.keys(e).forEach((s) => {
+      const decl = Object.keys(e[s]).map((p) => p + ':' + e[s][p] + '!important');
+      if (!decl.length) return;
+      const sl = 'html:root:root:root ' + s;
+      rules.push(pretty ? '  ' + sl + ' {\n' + decl.map((d) => '    ' + d + ';').join('\n') + '\n  }' : sl + '{' + decl.join(';') + '}');
+    });
+    if (rules.length) out += (pretty ? '/* ' + DEV[bp].l + ' */\n' : '') + MEDIA[bp] + ' {\n' + rules.join('\n') + '\n}\n' + (pretty ? '\n' : '');
+  });
+  return out;
+}
+function applyLive() { const s = doc && doc.getElementById('dp-live'); if (s) s.textContent = buildCSS(false); placeBoxes(); }
+function exportText() {
+  let o = '/* Kadar Studio — izmjene iz dizajn panela */\n/* Zalijepi na kraj <style> bloka u index.html ili mi pošalji. */\n\n' + buildCSS(true);
+  const tk = Object.keys(st.texts);
+  if (tk.length) o += '/* TEKST (mijenja se u index.html):\n' + tk.map((k) => ' ' + k + '\n   => "' + st.texts[k] + '"').join('\n') + '\n*/\n';
+  return o;
+}
+
+/* ---------- selektori ---------- */
+function cssPath(el) {
+  const parts = []; let e = el, prefix = 'body > ';
+  while (e && e.nodeType === 1 && e !== doc.body) {
+    if (e.id) { parts.unshift('#' + CSS.escape(e.id)); prefix = ''; break; }
+    let p = e.tagName.toLowerCase(); const par = e.parentElement;
+    if (par) { const same = [...par.children].filter((c) => c.tagName === e.tagName); if (same.length > 1) p += ':nth-of-type(' + (same.indexOf(e) + 1) + ')'; }
+    parts.unshift(p); e = par;
+  }
+  return prefix + parts.join(' > ');
+}
+function selOptions(el) {
+  const o = [], cls = [...el.classList];
+  cls.forEach((c) => { const s = '.' + CSS.escape(c); o.push([s, s + ' — ' + doc.querySelectorAll(s).length + ' el.']); });
+  if (cls.length > 1) { const s = cls.map((c) => '.' + CSS.escape(c)).join(''); o.push([s, s + ' — ' + doc.querySelectorAll(s).length + ' el.']); }
+  o.push([cssPath(el), 'samo ovaj element']);
+  return o;
+}
+const label = (el) => el.tagName.toLowerCase() + [...el.classList].slice(0, 2).map((c) => '.' + c).join('');
+
+/* ---------- okviri u sajtu ---------- */
+function mk(color) {
+  const d = doc.createElement('div');
+  d.style.cssText = 'position:fixed;z-index:2147483647;pointer-events:none;display:none;border:2px solid ' + color + ';background:' + color + '1F;box-sizing:border-box';
+  const l = doc.createElement('span');
+  l.style.cssText = 'position:absolute;left:-2px;top:-20px;padding:0 6px;font:600 11px/18px system-ui,sans-serif;color:#fff;background:' + color + ';white-space:nowrap;border-radius:3px';
+  d.appendChild(l); doc.body.appendChild(d); return d;
+}
+function box(el, ov, show) {
+  if (!el || !el.isConnected || !show) { ov.style.display = 'none'; return; }
+  const r = el.getBoundingClientRect();
+  ov.style.display = 'block'; ov.style.left = r.left + 'px'; ov.style.top = r.top + 'px'; ov.style.width = r.width + 'px'; ov.style.height = r.height + 'px';
+  ov.firstChild.textContent = label(el) + ' · ' + Math.round(r.width) + '×' + Math.round(r.height);
+  ov.firstChild.style.top = r.top < 22 ? (r.height + 2) + 'px' : '-20px';
+}
+function placeBoxes() {
+  if (!doc) return;
+  box(sel, selBox, true);
+  box(hov, hovBox, mode === 'pick' && hov !== sel);
+}
+
+/* ---------- učitavanje sajta ---------- */
+f.addEventListener('load', () => {
+  try { doc = f.contentDocument; win = f.contentWindow; doc.body.nodeType; } catch (e) { $('#err').style.display = 'block'; return; }
+  const live = doc.createElement('style'); live.id = 'dp-live'; doc.head.appendChild(live);
+  const ui = doc.createElement('style'); ui.textContent = 'html{scroll-behavior:auto!important}'; doc.head.appendChild(ui);
+  hovBox = mk('#4C8DF6'); selBox = mk('#E5484D');
+  sel = null; hov = null;
+  let raf = 0;
+  const later = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(placeBoxes); };
+  doc.addEventListener('mousemove', (e) => { if (mode !== 'pick') return; hov = e.target; later(); }, true);
+  doc.addEventListener('mouseleave', () => { hov = null; later(); });
+  ['mousedown', 'mouseup', 'pointerdown', 'pointerup'].forEach((t) => doc.addEventListener(t, (e) => { if (mode === 'pick') e.stopPropagation(); }, true));
+  doc.addEventListener('click', (e) => { if (mode !== 'pick') return; e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation(); select(e.target); }, true);
+  doc.addEventListener('keydown', (e) => { if (e.key === 'Escape') { sel = null; placeBoxes(); render(); } });
+  win.addEventListener('scroll', later, true); win.addEventListener('resize', later);
+  applyLive();
+  setTimeout(applyTexts, 900);
+  render();
+});
+function applyTexts() {
+  Object.keys(st.texts).forEach((p) => { try { const el = doc.querySelector(p); if (el && !el.children.length) el.textContent = st.texts[p]; } catch (e) {} });
+}
+
+/* ---------- izbor elementa ---------- */
+function select(el) {
+  if (!el || el === doc.body || el === doc.documentElement) return;
+  sel = el; selector = selOptions(el)[0][0];
+  placeBoxes(); render();
+}
+
+/* ---------- panel ---------- */
+const hex = (c) => {
+  const m = c.match(/rgba?\(([^)]+)\)/); if (!m) return '#000000';
+  const a = m[1].split(',').map((x) => parseFloat(x));
+  return '#' + a.slice(0, 3).map((x) => Math.round(x).toString(16).padStart(2, '0')).join('');
+};
+function curEdit() { return (st.edits[st.device][selector] || {}); }
+function readVal(p, cs) {
+  const v = cs.getPropertyValue(p);
+  if (p === 'text-align') return v === 'start' ? 'left' : v === 'end' ? 'right' : v;
+  return v;
+}
+function render() {
+  const p = $('#panel');
+  if (!sel || !sel.isConnected) {
+    p.innerHTML = '<div class="tip"><b>Klikni bilo koji element na sajtu</b> da ga urediš.<br><br>Izmjene vrijede samo za izabrani prikaz (<span class="bp">' + DEV[st.device].l + '</span>). Promijeni ga gore pa urediš i druge ekrane.<br><br>Za otvaranje formi i dugmadi prebaci na <b>Isprobaj sajt</b>.<br><br>Esc odznači element.</div>';
+    return;
+  }
+  const opts = selOptions(sel);
+  const leaf = !sel.children.length && sel.textContent.trim();
+  let h = '<div class="hd"><code>' + label(sel) + '</code><span class="bp">' + DEV[st.device].l + '</span>';
+  h += '<div class="nav"><button data-n="up" title="Roditelj">↑ roditelj</button><button data-n="down" title="Prvo dijete">↓ dijete</button><button data-n="prev" title="Prethodni">←</button><button data-n="next" title="Sljedeći">→</button></div>';
+  h += '<label class="fld"><span>Primijeni na</span><select class="in" id="selsel">' + opts.map((o) => '<option value="' + o[0].replace(/"/g, '&quot;') + '"' + (o[0] === selector ? ' selected' : '') + '>' + o[1] + '</option>').join('') + '</select></label></div>';
+  if (leaf) h += '<div class="grp"><h3>Sadržaj</h3><textarea class="in" id="txt">' + sel.textContent.replace(/</g, '&lt;') + '</textarea></div>';
+  PROPS.forEach((g) => {
+    h += '<div class="grp"><h3>' + g.g + '</h3><div class="' + (g.cols === 2 ? 'g2' : '') + '" style="' + (g.cols === 1 ? 'display:grid;gap:8px' : '') + '">';
+    g.items.forEach((it) => {
+      h += '<label class="fld"><span>' + it.l + '<button class="x" data-r="' + it.p + '" title="Poništi" hidden>×</button></span>';
+      if (it.t === 'sel') h += '<select class="in" data-p="' + it.p + '">' + it.opts.map((o) => '<option>' + o + '</option>').join('') + '</select>';
+      else if (it.t === 'col') h += '<input class="in" type="color" data-p="' + it.p + '">';
+      else h += '<input class="in" type="number" data-p="' + it.p + '" data-t="' + it.t + '" step="' + it.step + '"' + (it.grid ? ' data-grid="1"' : '') + '>';
+      h += '</label>';
+    });
+    h += '</div></div>';
+  });
+  h += '<p class="note">Razmaci i visine neka budu djeljivi sa 4. Polje postane žuto kad nisu.</p>';
+  p.innerHTML = h;
+  refresh();
+}
+function refresh(skip) {
+  if (!sel || !sel.isConnected) return;
+  const cs = win.getComputedStyle(sel), ed = curEdit();
+  document.querySelectorAll('#panel [data-p]').forEach((i) => {
+    const pr = i.dataset.p;
+    if (i === skip) { mark(i, pr, ed); return; }
+    const v = readVal(pr, cs);
+    if (i.type === 'color') i.value = hex(v);
+    else if (i.tagName === 'SELECT') i.value = v;
+    else { const n = parseFloat(v); i.value = isNaN(n) ? '' : String(Math.round(n * 100) / 100); }
+    mark(i, pr, ed);
+  });
+}
+function mark(i, pr, ed) {
+  i.classList.toggle('ed', pr in ed);
+  const x = i.parentElement.querySelector('.x'); if (x) x.hidden = !(pr in ed);
+  if (i.dataset.grid && i.value !== '') i.classList.toggle('warn', Number(i.value) % 4 !== 0); else i.classList.remove('warn');
+}
+function setEdit(pr, v) {
+  const e = st.edits[st.device];
+  if (v === null || v === '') { if (e[selector]) { delete e[selector][pr]; if (!Object.keys(e[selector]).length) delete e[selector]; } }
+  else (e[selector] = e[selector] || {})[pr] = v;
+  save(); applyLive(); badge();
+}
+
+const panel = $('#panel');
+panel.addEventListener('input', (e) => {
+  const i = e.target;
+  if (i.id === 'txt') { sel.textContent = i.value; st.texts[cssPath(sel)] = i.value; save(); badge(); placeBoxes(); return; }
+  const pr = i.dataset.p; if (!pr) return;
+  if (i.type === 'number') setEdit(pr, i.value === '' ? null : i.value + (i.dataset.t === 'px' ? 'px' : ''));
+  else setEdit(pr, i.value);
+  refresh(i);
+});
+panel.addEventListener('change', (e) => {
+  if (e.target.id === 'selsel') { selector = e.target.value; refresh(); }
+});
+panel.addEventListener('click', (e) => {
+  const b = e.target.closest('button'); if (!b) return;
+  if (b.dataset.r) { setEdit(b.dataset.r, null); refresh(); }
+  if (b.dataset.n) {
+    const t = { up: sel.parentElement, down: sel.firstElementChild, prev: sel.previousElementSibling, next: sel.nextElementSibling }[b.dataset.n];
+    if (t) select(t); else toast('Nema takvog elementa');
+  }
+});
+
+/* ---------- gornja traka ---------- */
+document.querySelectorAll('#dev button').forEach((b) => b.addEventListener('click', () => setDevice(b.dataset.d)));
+document.querySelectorAll('#mode button').forEach((b) => b.addEventListener('click', () => {
+  mode = b.dataset.m; document.querySelectorAll('#mode button').forEach((x) => x.classList.toggle('on', x === b));
+  if (mode === 'use') hov = null; placeBoxes();
+}));
+$('#copy').addEventListener('click', () => {
+  if (!total()) { toast('Još nema izmjena'); return; }
+  const t = exportText();
+  const done = () => toast('Kopirano. Zalijepi mi ili ubaci u index.html');
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(done, () => { fallback(t); done(); });
+  else { fallback(t); done(); }
+});
+function fallback(t) { const a = document.createElement('textarea'); a.value = t; document.body.appendChild(a); a.select(); try { document.execCommand('copy'); } catch (e) {} a.remove(); }
+$('#dl').addEventListener('click', () => {
+  if (!total()) { toast('Još nema izmjena'); return; }
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([exportText()], { type: 'text/css' })); a.download = 'izmjene.css'; a.click();
+});
+$('#reset').addEventListener('click', () => {
+  if (!total() || !confirm('Poništiti sve izmjene (' + total() + ')?')) return;
+  st.edits = { d: {}, t: {}, m: {} }; st.texts = {}; save(); applyLive(); badge(); f.contentWindow.location.reload();
+});
+window.addEventListener('resize', fit);
+badge(); setDevice(st.device);
+})();
+</script>
+</body>
+</html>
