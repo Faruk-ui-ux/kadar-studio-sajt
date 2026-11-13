@@ -591,6 +591,12 @@ html{scroll-behavior:auto}
 .pr-ask{display:flex;flex-direction:column;align-items:center;gap:12px;font-size:16px;line-height:24px;letter-spacing:0;font-weight:500}
 .pr-ask-m{display:none}
 .pr-ask-b{margin:0}
+.pr-cta{gap:0}
+.pr-ask{display:contents}
+.pr-ask-t{order:1}
+.pr-cta .pr-note{order:2;margin-top:4px}
+.pr-ask-b{order:3;margin-top:20px}
+.foot-rez{display:none!important}
 }
 .pr-det,.pr-l-m{display:none}
 @media (max-width:767px){
@@ -667,7 +673,7 @@ html{scroll-behavior:auto}
 .pr-dot.on::before{width:24px;background:#5C4A3C}
 @media (max-width:767px){
 .pr-hint{display:block!important;margin:0 0 4px;text-align:center;font-size:13px;line-height:20px;letter-spacing:0;color:#7A6A5C}
-.pr-cards{flex-direction:row!important;flex-wrap:nowrap!important;align-items:flex-start!important;justify-content:flex-start!important;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;gap:12px!important;margin-inline:-16px;padding:8px 16px 16px;scroll-padding-inline:16px}
+.pr-cards{flex-direction:row!important;flex-wrap:nowrap!important;align-items:flex-start!important;justify-content:flex-start!important;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;gap:12px!important;margin-inline:-16px;padding:8px 16px 4px;scroll-padding-inline:16px}
 .pr-cards::-webkit-scrollbar{display:none}
 .pr-cards>sc-if{display:contents}
 .pr-card,.pr-card-top{flex:0 0 calc(100% - 44px)!important;width:auto!important;scroll-snap-align:start}
@@ -968,7 +974,7 @@ html{scroll-behavior:auto}
 <div class="foot-top">
 <div class="foot-about">
 <p class="foot-claim">Priče koje ostaju.&nbsp;</p>
-<a class="btn btn-primary" href="#kontakt" @click="openForm">Rezerviši termin</a>
+<a class="btn btn-primary foot-rez" href="#kontakt" @click="openForm">Rezerviši termin</a>
 </div>
 <nav class="foot-col foot-col-nav" aria-label="Podnožje navigacija">
 <p class="foot-h">Stranica</p>
